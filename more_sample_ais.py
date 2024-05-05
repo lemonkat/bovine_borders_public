@@ -96,9 +96,9 @@ def connected(board):
     return result
 
 
-
 snake_path = [(0, 0)]
-timesWithCnt = [0]*500
+timesWithCnt = [0] * 500
+
 
 def barrys_snake_bot(board):
     connected_cells = connected(board)
@@ -115,17 +115,17 @@ def barrys_snake_bot(board):
         # if timesWithCnt[len(snake_path)] > 200:
         #     snake_path.pop()
         #     return None
-            # stuck in loop, so break out by ret
-            # move = random.choice(allowed_moves)
-            # snake_path.append(move)
-            # return move
+        # stuck in loop, so break out by ret
+        # move = random.choice(allowed_moves)
+        # snake_path.append(move)
+        # return move
         i1, j1 = snake_path[-1]
 
         if board[i1][j1] == 0 and connected_cells[i1][j1]:
             moves = [move for move in nearby((i1, j1)) if move in allowed]
             # moves.sort(key = lambda x: x[0]**2 + x[1]**2 - x[0]*x[1])
             if len(moves):
-                next_point = random.choice(moves) # moves[0]
+                next_point = random.choice(moves)  # moves[0]
                 break
 
         snake_path.pop()
@@ -133,7 +133,6 @@ def barrys_snake_bot(board):
     snake_path.append(next_point)
     # timesWithCnt[len(snake_path)] += 1
     return (i1, j1), next_point
-
 
 
 # # always passes
@@ -252,6 +251,7 @@ class DeltaBot:
 
         return random.choice(moves) if len(moves) else None
 
+
 def strict_static_map_bot(heatmap):
     def func(board):
         max_score = float("-inf")
@@ -263,7 +263,8 @@ def strict_static_map_bot(heatmap):
                 moves = []
             if score == max_score:
                 moves.append(((i1, j1), (i2, j2)))
-        if not len(moves): return None
+        if not len(moves):
+            return None
         return random.choice(moves)
 
     return func
@@ -271,7 +272,7 @@ def strict_static_map_bot(heatmap):
 
 defensive_bot = strict_static_map_bot(
     [[-i - j for j in range(20)] for i in range(20)],
-) 
+)
 offensive_bot = strict_static_map_bot(
     [[i + j for j in range(20)] for i in range(20)],
 )
@@ -281,32 +282,30 @@ defbot_2 = strict_static_map_bot(
 )
 
 saboNeedle = strict_static_map_bot(
-    [[-(20-j-i) for j in range(20)] for i in range(20)]
+    [[-(20 - j - i) for j in range(20)] for i in range(20)]
 )
 
 
 curve0 = strict_static_map_bot(
-    [[-(i+j+(i*j)) for j in range(20)] for i in range(20)]
+    [[-(i + j + (i * j)) for j in range(20)] for i in range(20)]
 )
 
 curve1 = strict_static_map_bot(
-    [[-(i*i+j*j-(i*j)) for j in range(20)] for i in range(20)]
+    [[-(i * i + j * j - (i * j)) for j in range(20)] for i in range(20)]
 )
 
-curve2 = strict_static_map_bot(
-    [[(-(i*j)) for j in range(20)] for i in range(20)]
-)
+curve2 = strict_static_map_bot([[(-(i * j)) for j in range(20)] for i in range(20)])
 
 curve3 = strict_static_map_bot(
     [[-((20 - i) ^ 2 + (20 - j) ^ 2) for j in range(20)] for i in range(20)]
 )
 
 curve4 = strict_static_map_bot(
-    [[(i*i + i*j - j*j) for j in range(20)] for i in range(20)]
+    [[(i * i + i * j - j * j) for j in range(20)] for i in range(20)]
 )
 
 curve5 = strict_static_map_bot(
-    [[(400-(i**2)-(j**2)) for j in range(20)] for i in range(20)]
+    [[(400 - (i**2) - (j**2)) for j in range(20)] for i in range(20)]
 )
 
 curve6 = 0
@@ -350,42 +349,49 @@ INF = 1000
 #
 # actually wait knapsack won't work well
 # with all corners, maybe this is the fastest?
-def distMap(board:list[list[int]]):
-    # this is the fastest way to 
-    # initialize a matrix, in some 
+def distMap(board: list[list[int]]):
+    # this is the fastest way to
+    # initialize a matrix, in some
     # problems it actually matters
-    ans = [[INF]*20 for i in range(20)] 
+    ans = [[INF] * 20 for i in range(20)]
     invalid = lambda x: not (x >= 0 and x < len(board))
     for cx, cy in CAPITALS:
         q = deque()
-        value = board[cy][cx] 
+        value = board[cy][cx]
         seen = set()
         if value == EMPTY_CELL:
             continue
-        q.append(((cy,cx), 0))
+        q.append(((cy, cx), 0))
         while len(q):
             pos, dist = q.popleft()
             y, x = pos
-            if invalid(y) or invalid(x) or pos in seen or ans[y][x] < dist or board[y][x] != value:
+            if (
+                invalid(y)
+                or invalid(x)
+                or pos in seen
+                or ans[y][x] < dist
+                or board[y][x] != value
+            ):
                 continue
             seen.add(pos)
             ans[y][x] = dist
-            q.append(((y+1, x), dist+1))
-            q.append(((y-1, x), dist+1))
-            q.append(((y, x+1), dist+1))
-            q.append(((y, x-1), dist+1))
-    ans = [[-(ans[i][j]-i-j) for j in range(20)] for i in range(20)]
+            q.append(((y + 1, x), dist + 1))
+            q.append(((y - 1, x), dist + 1))
+            q.append(((y, x + 1), dist + 1))
+            q.append(((y, x - 1), dist + 1))
+    ans = [[-(ans[i][j] - i - j) for j in range(20)] for i in range(20)]
     return ans
 
 
-
 debug = [0]
-weird_1 = lambda board: (x:= strict_static_map_bot(
-    distMap(board)
-)(board), debug.__setitem__(0, 1), x)[-1]
+weird_1 = lambda board: (
+    x := strict_static_map_bot(distMap(board))(board),
+    debug.__setitem__(0, 1),
+    x,
+)[-1]
 
 weird_2 = strict_static_map_bot(
-    [[((i**2)/(j) - (j**2)/(i)) for j in range(1, 21)] for i in range(1, 21)]
+    [[((i**2) / (j) - (j**2) / (i)) for j in range(1, 21)] for i in range(1, 21)]
 )
 
 weird_3 = strict_static_map_bot(
@@ -395,58 +401,64 @@ weird_3 = strict_static_map_bot(
 
 # print(debug, end="--\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
 
-def heatmapFromFile(file:str) -> list[list[int]]:
+
+def heatmapFromFile(file: str) -> list[list[int]]:
     with open(file, "r") as f:
         tabl = [list(map(int, i.split())) for i in f.read().split("\n")]
     return tabl
 
-weird_4 = strict_static_map_bot(
-    heatmapFromFile("mp2.txt")
-)
 
-weird_5 = strict_static_map_bot(
-    [[-min(i,j) for j in range(20)] for i in range(20)]
-)
+weird_4 = strict_static_map_bot(heatmapFromFile("mp2.txt"))
+
+weird_5 = strict_static_map_bot([[-min(i, j) for j in range(20)] for i in range(20)])
 
 
-moves = [(0,0)]
+moves = [(0, 0)]
+
+
 def snaek(board):
     i = -1
-    while i >= -len(moves) and len([j for j in nearby(moves[i]) if board[j[0]][j[1]] > 0]) == 0:
+    while (
+        i >= -len(moves)
+        and len([j for j in nearby(moves[i]) if board[j[0]][j[1]] > 0]) == 0
+    ):
         i -= 1
 
-    move = random.choice([j for j in nearby(moves[i]) if j > 0]) if i >= -len(moves) else random_bot(board)
+    move = (
+        random.choice([j for j in nearby(moves[i]) if j > 0])
+        if i >= -len(moves)
+        else random_bot(board)
+    )
     moves.append(move)
     return move
+
 
 # TODO: make
 # def arulmozhivarmanWeightPos()
 
+
 def vexing_vandiyadevan(board):
     # get all moves, pass if can't move
     moves = allowed_moves(board)
-    if len(moves) == 0: return None
+    if len(moves) == 0:
+        return None
     moves = list(moves)
 
-    # sort the moves by distance from capital, 
-    # plus a small random factor which sometimes 
+    # sort the moves by distance from capital,
+    # plus a small random factor which sometimes
     # helps to break stalemates
     moves.sort(
-        key=lambda move: (
-            move[0][0]
-            + move[0][1] 
-            + random.choice([0, 1, 2, 3, 5])
-        )
+        key=lambda move: (move[0][0] + move[0][1] + random.choice([0, 1, 2, 3, 5]))
     )
-    # pick the first move x1,y1 -> x2,y2 that satisfies 
-    # |(x1)(x2) - (y1)(y2)| <= the number of possible moves. 
+    # pick the first move x1,y1 -> x2,y2 that satisfies
+    # |(x1)(x2) - (y1)(y2)| <= the number of possible moves.
     # this threshold is small initially, but increases as the
-    # bot expands. The moves that best satisfy the inequality 
+    # bot expands. The moves that best satisfy the inequality
     # tend to lay on the diagonal line from their capital.
     for e, s in moves:
         if abs(e[0] * s[0] - e[1] * s[1]) <= len(moves):
             return (e, s)
-    # no valid moves were found, so see if any 
+    # no valid moves were found, so see if any
     # of those moves goes to an empty spot. If
     # so, take it.
     for e, s in moves:
@@ -455,63 +467,67 @@ def vexing_vandiyadevan(board):
     # ok the bot has now given up and will random it.
     return random.choice(moves)
 
+
 class PersistentPunk:
     # im doing this LK, don't mess with it - @Vodiboi
     def __init__(self):
-        self.cell = (0,0)
+        self.cell = (0, 0)
         self._a()
-    def sign(self, n:int):
+
+    def sign(self, n: int):
         return 1 if n > 0 else -1 if n < 0 else 0
+
     def bfsNearest(self, board, cell):
         q = deque()
         q.append((cell, 0))
         seen = set()
         while len(q):
             c, d = q.popleft()
-            if not in_bounds(c) or c in seen: continue
+            if not in_bounds(c) or c in seen:
+                continue
             seen.add(c)
-            if board[c[0]][c[1]] == 0: return (c, d)
+            if board[c[0]][c[1]] == 0:
+                return (c, d)
             for x in nearby(c):
-                q.append((x, d+1))
+                q.append((x, d + 1))
         return None
 
     def updateCellOne(self, board):
         # pick new random non-occupied cell
-        nums = [(i,j) for i in range(20) for j in range(20)]
+        nums = [(i, j) for i in range(20) for j in range(20)]
         random.shuffle(nums)
         # print(nums)
         for i in nums:
-            if (board[i[0]][i[1]] != 0):
+            if board[i[0]][i[1]] != 0:
                 self.cell = i
                 break
-    
-    def updateCellTwo(self, board, threshold = 3):
+
+    def updateCellTwo(self, board, threshold=3):
         # pick a cell at most 3 away
-        self.updateCellOne(board) # randomly update
-        nums = [(i,j) for i in range(20) for j in range(20)]
+        self.updateCellOne(board)  # randomly update
+        nums = [(i, j) for i in range(20) for j in range(20)]
         random.shuffle(nums)
         for i in nums:
             m = self.allNotOccupiedInDist(board, i, threshold)
             if len(m):
                 self.cell = random.choice(m)
                 break
-    
+
     def allNotOccupiedInDist(self, board, cell, dist=3):
         return [
-            (i,j) 
-            for i in range(20) 
-            for j in range(20) 
-            if abs(i-cell[0])+abs(j-cell[1]) == dist 
-            and board[i][j] != 0
+            (i, j)
+            for i in range(20)
+            for j in range(20)
+            if abs(i - cell[0]) + abs(j - cell[1]) == dist and board[i][j] != 0
         ]
 
-    def updateCellThree(self, board, l=range(1,40)):
+    def updateCellThree(self, board, l=range(1, 40)):
         for r in l:
-            m = self.allNotOccupiedInDist(board, (0,0), r)
+            m = self.allNotOccupiedInDist(board, (0, 0), r)
             if len(m):
                 # weigh enemy over random
                 for j in m:
-                    if (board[j[0]][j[1]] != -1):
+                    if board[j[0]][j[1]] != -1:
                         self.cell = j
                         return
                 self.cell = random.choice(m)
@@ -519,46 +535,53 @@ class PersistentPunk:
 
     def _a(self):
         self.l1 = list(range(1, 40))
-        self.l2 = list(range(1, 20)) + [23,25,29,31,35,37] + list(range(20,40))
-        self.l3 = [i for i in range(1,40) if i%2] + [i for i in range(1,40) if not i%2]
-        self.l4 = [i for i in range(1,40) if i%5 in (0,1)] + [i for i in range(1,40) if i%5 not in (0,1)]
-        self.l5 = [i for i in range(1,40) if i%9 not in (3, 4)] + [i for i in range(1,40) if i%9 in (3,4 )]
+        self.l2 = list(range(1, 20)) + [23, 25, 29, 31, 35, 37] + list(range(20, 40))
+        self.l3 = [i for i in range(1, 40) if i % 2] + [
+            i for i in range(1, 40) if not i % 2
+        ]
+        self.l4 = [i for i in range(1, 40) if i % 5 in (0, 1)] + [
+            i for i in range(1, 40) if i % 5 not in (0, 1)
+        ]
+        self.l5 = [i for i in range(1, 40) if i % 9 not in (3, 4)] + [
+            i for i in range(1, 40) if i % 9 in (3, 4)
+        ]
 
     def __call__(self, board) -> tuple[tuple[int]]:
-        if (board[self.cell[0]][self.cell[1]] == 0):
+        if board[self.cell[0]][self.cell[1]] == 0:
             self.updateCellThree(board, self.l1)
         # move towards cell
         # algorithm for doing so:
         # pick nearest cell that belongs to you
-        # and move towards it. If somehow it is 
-        # blocked by itself, then that's a closer 
+        # and move towards it. If somehow it is
+        # blocked by itself, then that's a closer
         # cell.
         nearest, x = self.bfsNearest(board, self.cell)
         # figure out which way to move
-        self.xDir = self.sign(-(nearest[0]-self.cell[0]))
-        self.yDir = self.sign(-(nearest[1]-self.cell[1]))
+        self.xDir = self.sign(-(nearest[0] - self.cell[0]))
+        self.yDir = self.sign(-(nearest[1] - self.cell[1]))
         # print(self.xDir, self.yDir)
-        if (random.randint(0,1) and self.xDir != 0) or (self.xDir != 0 and self.yDir == 0):
+        if (random.randint(0, 1) and self.xDir != 0) or (
+            self.xDir != 0 and self.yDir == 0
+        ):
             # move in x
-            return (nearest, (nearest[0]+self.xDir, nearest[1]))
-        
-        return (nearest, (nearest[0], nearest[1]+self.yDir))
+            return (nearest, (nearest[0] + self.xDir, nearest[1]))
 
+        return (nearest, (nearest[0], nearest[1] + self.yDir))
 
 
 __all__ = [
-    "square_bot", 
-    "pierce_bot", 
-    "curve_bot", 
-    "curve_bot_2", 
-    "DeltaBot", 
+    "square_bot",
+    "pierce_bot",
+    "curve_bot",
+    "curve_bot_2",
+    "DeltaBot",
     "offensive_bot",
     "defensive_bot",
     "saboNeedle",
-    "curve0", 
-    "curve1", 
-    "curve2", 
-    "curve3", 
+    "curve0",
+    "curve1",
+    "curve2",
+    "curve3",
     "curve4",
     "curve5",
     "curve6",
@@ -570,5 +593,5 @@ __all__ = [
     "snaek",
     "barrys_snake_bot",
     "vexing_vandiyadevan",
-    "PersistentPunk"
+    "PersistentPunk",
 ]

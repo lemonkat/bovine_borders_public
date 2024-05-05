@@ -12,22 +12,26 @@ ACTION_SPEC = tfa.specs.array_spec.BoundedArraySpec(
 )
 
 # contains a mask of allowed moves
-OBSERVATION_SPEC = tfa.specs.array_spec.BoundedArraySpec(
-    shape=(
-        20,
-        20,
+OBSERVATION_SPEC = (
+    tfa.specs.array_spec.BoundedArraySpec(
+        shape=(
+            20,
+            20,
+        ),
+        dtype=np.int32,
+        minimum=-1,
+        maximum=3,
+        name="observation",
     ),
-    dtype=np.int32,
-    minimum=-1,
-    maximum=3,
-    name="observation",
-), tfa.specs.array_spec.BoundedArraySpec(
-    shape=(400,),
-    dtype=np.int32,
-    minimum=0,
-    maximum=1,
-    name="mask",
+    tfa.specs.array_spec.BoundedArraySpec(
+        shape=(400,),
+        dtype=np.int32,
+        minimum=0,
+        maximum=1,
+        name="mask",
+    ),
 )
+
 
 # does the same thing as in sample_ais, but way faster
 def allowed_dst_grid(board: np.ndarray[np.int32]) -> np.ndarray[bool]:
@@ -38,6 +42,7 @@ def allowed_dst_grid(board: np.ndarray[np.int32]) -> np.ndarray[bool]:
     result[:, 1:] |= owned[:, :-1]
     result[:, :-1] |= owned[:, 1:]
     return np.logical_and(result, np.logical_not(owned))
+
 
 # "environment" that the policy can interact with
 class BBIntPyEnv(tfa.environments.PyEnvironment):
@@ -55,11 +60,11 @@ class BBIntPyEnv(tfa.environments.PyEnvironment):
     def _reset(self):
         self._time_step = tfa.trajectories.restart(self._get_observation())
         return self._time_step
-    
+
     def _step(self, action):
         self._time_step = tfa.trajectories.transition(self._get_observation(), 0)
         return self._time_step
-    
+
     def action_spec(self):
         return ACTION_SPEC
 
@@ -68,6 +73,7 @@ class BBIntPyEnv(tfa.environments.PyEnvironment):
 
     def set_board(self, board):
         self._board = board
+
 
 class Svarog:
     def __init__(self, filename: str = "svarog_v6_data"):
@@ -79,5 +85,6 @@ class Svarog:
         self._py_env.set_board(np.array(boardIn, dtype=np.int32))
         raw_action = self._policy.action(self._tf_env.step(0)).action.numpy()[0]
         return raw_action // 20, raw_action % 20
-    
+
+
 SVAROG_COLOR = [60, 60, 200]

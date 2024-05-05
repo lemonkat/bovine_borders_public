@@ -14,21 +14,24 @@ ACTION_SPEC = tfa.specs.array_spec.BoundedArraySpec(
 )
 
 # contains a mask of allowed moves
-OBSERVATION_SPEC = tfa.specs.array_spec.BoundedArraySpec(
-    shape=(
-        20,
-        20,
+OBSERVATION_SPEC = (
+    tfa.specs.array_spec.BoundedArraySpec(
+        shape=(
+            20,
+            20,
+        ),
+        dtype=np.int32,
+        minimum=-1,
+        maximum=3,
+        name="observation",
     ),
-    dtype=np.int32,
-    minimum=-1,
-    maximum=3,
-    name="observation",
-), tfa.specs.array_spec.BoundedArraySpec(
-    shape=(400,),
-    dtype=np.int32,
-    minimum=0,
-    maximum=1,
-    name="mask",
+    tfa.specs.array_spec.BoundedArraySpec(
+        shape=(400,),
+        dtype=np.int32,
+        minimum=0,
+        maximum=1,
+        name="mask",
+    ),
 )
 
 TIME_STEP_SPEC = tfa.trajectories.time_step_spec(OBSERVATION_SPEC)
@@ -89,14 +92,12 @@ class BBPyEnv(tfa.environments.py_environment.PyEnvironment):
 
     def _get_observation(self):
         return self._board, self._allowed_moves(0).flatten()
-        
+
     def _step(self, action):
-        
         if self._episode_ended:
             return self.reset()
-        
+
         self._num_kills = 0
-        
 
         # get moves
         actions = [(0, (action // 20, action % 20))]
@@ -118,7 +119,7 @@ class BBPyEnv(tfa.environments.py_environment.PyEnvironment):
                     continue
 
                 src = random.choice(allowed_srcs)
-                
+
                 connected = self._is_connected(src)
 
                 if self[dst] == -1:
@@ -167,7 +168,7 @@ class BBPyEnv(tfa.environments.py_environment.PyEnvironment):
         for row in self._board:
             result.append("".join("ABCD "[num] for num in row))
         return "\n".join(result)
-    
+
     def _allowed_moves(self, plr):
         np.equal(self._board, plr, out=self._workspace[0])
         self._workspace[1, -1] = 0
@@ -178,7 +179,7 @@ class BBPyEnv(tfa.environments.py_environment.PyEnvironment):
         np.logical_not(self._workspace[0], out=self._workspace[0])
         np.logical_and(self._workspace[0], self._workspace[1], out=self._dst_result)
         return self._dst_result
-        
+
     def _is_connected(self, pos):
         plr = self[pos]
         tgt = CORNERS[plr]
@@ -197,12 +198,13 @@ class BBPyEnv(tfa.environments.py_environment.PyEnvironment):
             reached[pos] = True
             stack.extend(NB_INBOUNDS[pos])
         return False
-        
+
 
 def BBTfEnv():
     return tfa.environments.tf_py_environment.TFPyEnvironment(
         BBPyEnv(),
     )
+
 
 def BBProcEnv(batch_size):
     return tfa.environments.tf_py_environment.TFPyEnvironment(
@@ -211,6 +213,7 @@ def BBProcEnv(batch_size):
         ),
     )
 
+
 def BBThreadEnv(batch_size):
     return tfa.environments.tf_py_environment.TFPyEnvironment(
         tfa.environments.batched_py_environment.BatchedPyEnvironment(
@@ -218,6 +221,10 @@ def BBThreadEnv(batch_size):
         )
     )
 
+
 if __name__ == "__main__":
     from util import splitter
-    tfa.environments.utils.validate_py_environment(BBPyEnv(), episodes=1, observation_and_action_constraint_splitter=splitter)
+
+    tfa.environments.utils.validate_py_environment(
+        BBPyEnv(), episodes=1, observation_and_action_constraint_splitter=splitter
+    )

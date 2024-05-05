@@ -87,6 +87,7 @@ def _rotate_pos(steps: int, pos: tuple[int, int]) -> tuple[int, int]:
         i, j = 19 - j, i
     return i, j
 
+
 def _rotate_move(steps: int, move: tuple[tuple[int]]) -> tuple[tuple[int]]:
     """
     rotates move int quarters ccw and returns that

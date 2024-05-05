@@ -3,22 +3,22 @@ import tf_agents as tfa
 
 from util import splitter, evaluate
 
-def run_experiment(
-        agent: tfa.agents.TFAgent,
-        train_env: tfa.environments.TFEnvironment,
-        eval_env: tfa.environments.TFEnvironment,
-        num_iters: int,
-        step_by_episode: bool,
-        init_collect_steps: int,
-        collect_steps_per_iter: int,
-        sample_batch_size: int,
-        replay_buffer_max_len: int,
-        log_interval: int,
-        eval_interval: int,
-        save_interval: int,
-        save_path: str,
-    ):
 
+def run_experiment(
+    agent: tfa.agents.TFAgent,
+    train_env: tfa.environments.TFEnvironment,
+    eval_env: tfa.environments.TFEnvironment,
+    num_iters: int,
+    step_by_episode: bool,
+    init_collect_steps: int,
+    collect_steps_per_iter: int,
+    sample_batch_size: int,
+    replay_buffer_max_len: int,
+    log_interval: int,
+    eval_interval: int,
+    save_interval: int,
+    save_path: str,
+):
     print("Initializing...")
 
     policy_saver = tfa.policies.policy_saver.PolicySaver(agent.policy)
@@ -36,19 +36,25 @@ def run_experiment(
     )
 
     init_driver = (
-        tfa.drivers.dynamic_episode_driver.DynamicEpisodeDriver 
-        if step_by_episode else
-        tfa.drivers.dynamic_step_driver.DynamicStepDriver    
+        tfa.drivers.dynamic_episode_driver.DynamicEpisodeDriver
+        if step_by_episode
+        else tfa.drivers.dynamic_step_driver.DynamicStepDriver
     )(train_env, random_policy, [replay_buffer.add_batch], None, init_collect_steps)
 
     train_driver = (
-        tfa.drivers.dynamic_episode_driver.DynamicEpisodeDriver 
-        if step_by_episode else
-        tfa.drivers.dynamic_step_driver.DynamicStepDriver    
-    )(train_env, agent.collect_policy, [replay_buffer.add_batch], None, collect_steps_per_iter)
+        tfa.drivers.dynamic_episode_driver.DynamicEpisodeDriver
+        if step_by_episode
+        else tfa.drivers.dynamic_step_driver.DynamicStepDriver
+    )(
+        train_env,
+        agent.collect_policy,
+        [replay_buffer.add_batch],
+        None,
+        collect_steps_per_iter,
+    )
 
     dataset = replay_buffer.as_dataset(
-        num_parallel_calls=3, 
+        num_parallel_calls=3,
         sample_batch_size=sample_batch_size,
         num_steps=2,
     )
@@ -57,7 +63,6 @@ def run_experiment(
 
     agent.train = tfa.utils.common.function(agent.train)
     agent.train_step_counter.assign(0)
-
 
     print("Initialized. ")
 
@@ -89,6 +94,7 @@ def run_experiment(
 
         if step % save_interval == 0:
             policy_saver.save(f"{save_path}/{step}")
+
 
 def main(*args):
     from env import BBTfEnv, BBThreadEnv
@@ -136,6 +142,7 @@ def main(*args):
         save_interval=100000,
         save_path="svarog_v6_data",
     )
+
 
 if __name__ == "__main__":
     main()
